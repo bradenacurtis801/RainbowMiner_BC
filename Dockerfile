@@ -4,14 +4,9 @@ FROM nvidia/cuda:11.6.1-base-ubuntu20.04
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install sudo
+# Install sudo, Git, and other dependencies in one step
 RUN apt-get update && \
-    apt-get install -y sudo && \
-    apt-get clean
-
-# Install dependencies and Git
-RUN apt-get update && \
-    apt-get install -y git wget && \
+    apt-get install -y sudo git wget && \
     apt-get clean
 
 # Install the appropriate version of libicu

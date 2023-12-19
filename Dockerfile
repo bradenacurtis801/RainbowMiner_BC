@@ -40,6 +40,9 @@ RUN chmod 440 /etc/sudoers
 # Copy setup.json to the root directory inside the container
 COPY setup.json /rainbowminer
 
+# Expose port 4000 For RainbowMiner GUI
+EXPOSE 4000
+
 # Run the installation script (you may need to adapt this step)
 # Note: Running 'sudo' within a Docker container may not work as expected,
 # so you might need to modify the install.sh script accordingly.

@@ -1,61 +1,51 @@
-# Use NVIDIA CUDA base image with Ubuntu 20.04
-FROM nvidia/cuda:11.6.1-base-ubuntu20.04
+# Base Image
+FROM nvidia/cuda:12.3.1-runtime-ubuntu20.04
 
-# Set environment variables
-ENV DEBIAN_FRONTEND=noninteractive
+# Set timezone to Mountain Time (for Utah)
+ENV TZ=America/Denver
+RUN apt update && apt install -y tzdata && \
+    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
+    echo $TZ > /etc/timezone
 
-# Install sudo, Git, and other dependencies in one step
-RUN apt-get update && \
-    apt-get install -y sudo git wget && \
-    apt-get clean
 
-# Install the appropriate version of libicu
-RUN apt-get install -y libicu66 && \
-    apt-get clean
+# Install dependencies and tools
+RUN apt-get update && apt-get upgrade -y && apt-get install -y \
+    software-properties-common \
+    sudo \
+    nano \
+    dkms \
+    build-essential \
+    wget \
+    xz-utils \
+    git \
+    systemd
 
-# Download PowerShell package version 7.2.16
-RUN wget https://github.com/PowerShell/PowerShell/releases/download/v7.2.16/powershell-lts_7.2.16-1.deb_amd64.deb
+# Add NVIDIA repository
+RUN add-apt-repository ppa:graphics-drivers/ppa && \
+    apt-get update
 
-# Install PowerShell package
-RUN dpkg -i powershell-lts_7.2.16-1.deb_amd64.deb
+# Install NVIDIA packages
+RUN apt-get install -y \
+    nvidia-cuda-toolkit \
+    nvidia-headless-535 \
+    nvidia-driver-535 \
+    nvidia-compute-utils-535
 
-# Install PowerShell dependencies
-RUN apt-get install -f
+# Clone and setup RainbowMiner
+RUN git clone https://github.com/rainbowminer/RainbowMiner && \
+    cd RainbowMiner && \
+    chmod +x *.sh && \
+    ./install.sh
 
-# Clone the RainbowMiner repository
-RUN git clone https://github.com/rainbowminer/RainbowMiner /rainbowminer
+# Set the working directory
+WORKDIR /RainbowMiner
 
-# Change directory to RainbowMiner
-WORKDIR /rainbowminer
-
-# Make shell scripts executable
-RUN chmod +x *.sh
-
-# Copy your sudoers file to allow specific commands
-COPY sudoers /etc/sudoers
-
-# Set correct permissions for the sudoers file
-RUN chmod 440 /etc/sudoers
-
-# Copy setup.json to the root directory inside the container
-COPY setup.json /rainbowminer
-
-# Expose port 4000 For RainbowMiner GUI
+# Expose the port for the web interface
 EXPOSE 4000
 
-# Run the installation script (you may need to adapt this step)
-# Note: Running 'sudo' within a Docker container may not work as expected,
-# so you might need to modify the install.sh script accordingly.
-# For this example, we'll comment out the installation step.
-# RUN sudo ./install.sh
+# Set the default command to start RainbowMiner
+CMD ["./start.sh"]
 
-# Expose any necessary ports
-# (add EXPOSE statements if RainbowMiner requires specific ports to be open)
-
-# Define the command to start RainbowMiner (choose one of the options below)
-# CMD ["./start.sh"]
-# CMD ["./start-screen.sh"]
-# CMD ["./start-nohup.sh"]
-CMD echo
-
-# You can choose one of the above CMD statements based on your preferred way of starting RainbowMiner.
+# Setting environment variables for RainbowMiner
+ENV USERNAME=root \
+    PASSWORD=root

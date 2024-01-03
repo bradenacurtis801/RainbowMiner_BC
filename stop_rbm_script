@@ -6,6 +6,7 @@ stop_docker_container() {
     local container_image="$2"
     ssh -o StrictHostKeyChecking=no -t "ubuntu@${ip}" << EOF
     output=\$(sudo docker ps -q --filter "ancestor=${container_image}" | xargs -r sudo docker stop 2>&1)
+    echo "\$output"
     if echo "\$output" | grep -q "Error response from daemon: cannot stop container"; then
         echo "Error encountered. Rebooting \$HOSTNAME..."
         sudo reboot

@@ -5,7 +5,12 @@ stop_all_containers() {
     local ip="$1"
     ssh -o StrictHostKeyChecking=no -t "ubuntu@${ip}" << 'EOF'
     echo "Stopping all containers with image name containing 'bradenacurtis801' on ${HOSTNAME}..."
-    sudo docker ps -q --filter "ancestor=bradenacurtis801" | xargs -r sudo docker stop
+    output=$(docker stop $(docker ps -a | grep "bradenacurtis801" | awk '{print $1}'))
+    echo "$output"
+    if echo "$output" | grep -q "Error response from daemon: cannot stop container"; then
+        echo "Error encountered. Rebooting ${HOSTNAME}..."
+        sudo reboot
+    fi
 EOF
 }
 

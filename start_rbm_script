@@ -16,7 +16,7 @@ run_docker_command() {
     fi
 
     ssh -o StrictHostKeyChecking=no -t "ubuntu@${ip}" << EOF
-    sudo docker run --gpus all -d \
+    sudo docker run --gpus all -d --rm \
     -p 4000:4000 \
     --network host \
     ${container_image} ${script}

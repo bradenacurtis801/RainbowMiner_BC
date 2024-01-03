@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# Function to run the docker command on a remote machine
+run_docker_command() {
+    local ip="$1"
+    ssh -o StrictHostKeyChecking=no -t "ubuntu@${ip}" << 'EOF'
+    sudo docker run --gpus all -it \
+    -p 4000:4000 \
+    --network host \
+    bradenacurtis801/rbm-client:1.0 ./inject_init_bc.sh
+EOF
+}
+
+# List of IP address ranges
+ip_ranges=(
+    "10.10.11"
+    "10.10.12"
+    "10.10.13"
+    "10.10.14"
+    "10.10.111"
+    "10.10.112"
+    "10.10.113"
+)
+
+# Loop through the IP ranges
+for range in "${ip_ranges[@]}"; do
+    for i in $(seq 1 20); do
+        ip="${range}.${i}"
+
+        # Exclude specific IP address
+        if [ "$ip" == "10.10.12.1" ]; then
+            echo "Skipping ${ip}..."
+            continue
+        fi
+
+        echo "Running command on ${ip}..."
+        run_docker_command "${ip}" &
+    done
+done
+
+# Wait for all background processes to complete
+wait
+echo "All commands have been executed."

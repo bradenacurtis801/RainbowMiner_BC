@@ -3,11 +3,23 @@
 # Function to run the docker command on a remote machine
 run_docker_command() {
     local ip="$1"
-    ssh -o StrictHostKeyChecking=no -t "ubuntu@${ip}" << 'EOF'
+    local container_image
+    local script
+
+    # Determine which container and script to use based on IP range
+    if [[ "$ip" == 10.10.12[1-5].* ]]; then
+        container_image="bradenacurtis801/rbm-client-a4000x2:1.0"
+        script="./inject_init_bc_alternate.sh" # Update this if the script name is different
+    else
+        container_image="bradenacurtis801/rbm-client:1.0"
+        script="./inject_init_bc.sh"
+    fi
+
+    ssh -o StrictHostKeyChecking=no -t "ubuntu@${ip}" << EOF
     sudo docker run --gpus all -it \
     -p 4000:4000 \
     --network host \
-    bradenacurtis801/rbm-client:1.0 ./inject_init_bc.sh
+    ${container_image} ${script}
 EOF
 }
 
@@ -20,6 +32,11 @@ ip_ranges=(
     "10.10.111"
     "10.10.112"
     "10.10.113"
+    "10.10.121"
+    "10.10.122"
+    "10.10.123"
+    "10.10.124"
+    "10.10.125"
 )
 
 # Loop through the IP ranges

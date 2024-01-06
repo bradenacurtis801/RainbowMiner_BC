@@ -1,13 +1,11 @@
 #!/bin/bash
 > /home/datacare/.ssh/known_hosts
 
-# Function to run the docker command on a remote machine
+# Function to run the Docker command on a remote machine
 run_docker_command() {
     local ip="$1"
-    local container_image
-    local script
-    container_image="bradenacurtis801/rbm-client:1.0"
-    script="./inject_init_bc.sh"
+    local container_image="$2"
+    local script="$3"
 
     # Check if SSH connection is successful
     if ! ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=no "ubuntu@${ip}" 'exit'; then
@@ -20,9 +18,9 @@ run_docker_command() {
     if sudo docker ps --format "" | grep -q "${container_image}"; then
         echo "Container with image ${container_image} is already running on ${ip}"
     else
-            echo "Starting Docker container on ${ip}"
-            sudo docker run --gpus all -d --rm -p 4000:4000 --network host ${container_image} ${script}
-            echo "Docker command executed on ${ip}"
+        echo "Starting Docker container on ${ip}"
+        sudo docker run --gpus all -d --rm -p 4000:4000 --network host "${container_image}" "${script}"
+        echo "Docker command executed on ${ip}"
     fi
 EOF
     # Check if SSH command was successful
@@ -31,8 +29,8 @@ EOF
     fi
 }
 
-# List of IP address ranges
-ip_ranges=(
+# List of IP address ranges for the first Docker image
+ip_ranges_1=(
     "10.10.11"
     "10.10.12"
     "10.10.13"
@@ -45,6 +43,10 @@ ip_ranges=(
     "10.10.111"
     "10.10.112"
     "10.10.113"
+)
+
+# List of IP address ranges for the second Docker image
+ip_ranges_2=(
     "10.10.121"
     "10.10.122"
     "10.10.123"
@@ -52,173 +54,25 @@ ip_ranges=(
     "10.10.125"
 )
 
-# Loop through the IP ranges
-for range in "${ip_ranges[@]}"; do
+container_image_1="bradenacurtis801/rbm-client:1.0"
+container_image_2="bradenacurtis801/rbm-client-a4000x2:1.0"
+script="./inject_init_bc.sh -s 10.10.111.3"
+
+# Loop through the IP ranges for the first Docker image
+for range in "${ip_ranges_1[@]}"; do
     for i in $(seq 1 20); do
         ip="${range}.${i}"
-        run_docker_command "${ip}" &
+        run_docker_command "${ip}" "${container_image_1}" "${script}" &
     done
-  done
+done
 
-###################################################
-# Function to run the docker command on a remote machine
-run_docker_command_2() {
-    local ip="$1"
-    local container_image
-    local script
-    container_image="bradenacurtis801/rbm-client-a4000x2:1.0"
-    echo '############################## runnung container image' $container_image 'on ip:' $ip
-    script="./inject_init_bc.sh"
-
-    # Check if SSH connection is successful
-    if ! ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=no "ubuntu@${ip}" 'exit'; then
-        echo "SSH connection failed for ${ip}. Skipping."
-        return
-    fi
-
-    echo "Running command on ${ip}..."
-    ssh -o StrictHostKeyChecking=no "ubuntu@${ip}" <<EOF
-    if sudo docker ps --format "" | grep -q "${container_image}"; then
-        echo "Container with image ${container_image} is already running on ${ip}"
-    else
-        echo "Starting Docker container on ${ip}"
-        sudo docker run --gpus all -d --rm -p 4000:4000 --network host ${container_image} ${script}
-        echo "Docker command executed on ${ip}"
-    fi
-EOF
-    # Check if SSH command was successful
-    if [ $? -ne 0 ]; then
-        echo "SSH command failed on ${ip}."
-    fi
-}
-
-# List of IP address ranges
-ip_ranges=(
-    "10.10.121"
-    "10.10.122"
-    "10.10.123"
-    "10.10.124"
-    "10.10.125"
-)
-
-# Loop through the IP ranges
-for range in "${ip_ranges[@]}"; do
+# Loop through the IP ranges for the second Docker image
+for range in "${ip_ranges_2[@]}"; do
     for i in $(seq 1 20); do
         ip="${range}.${i}"
-        run_docker_command_2 "${ip}" &
-                                                                                                                                                                                          103,0-1       90%
-
-# Loop through the IP ranges
-for range in "${ip_ranges[@]}"; do
-    for i in $(seq 1 20); do
-        ip="${range}.${i}"
-        run_docker_command "${ip}" &
+        run_docker_command "${ip}" "${container_image_2}" "${script}" &
     done
-  done
-
-###################################################
-# Function to run the docker command on a remote machine
-run_docker_command_2() {
-    local ip="$1"
-    local container_image
-    local script
-    container_image="bradenacurtis801/rbm-client-a4000x2:1.0"
-    echo '############################## runnung container image' $container_image 'on ip:' $ip
-    script="./inject_init_bc.sh"
-
-    # Check if SSH connection is successful
-    if ! ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=no "ubuntu@${ip}" 'exit'; then
-        echo "SSH connection failed for ${ip}. Skipping."
-        return
-    fi
-
-    echo "Running command on ${ip}..."
-    ssh -o StrictHostKeyChecking=no "ubuntu@${ip}" <<EOF
-    if sudo docker ps --format "" | grep -q "${container_image}"; then
-        echo "Container with image ${container_image} is already running on ${ip}"
-    else
-        echo "Starting Docker container on ${ip}"
-        sudo docker run --gpus all -d --rm -p 4000:4000 --network host ${container_image} ${script}
-        echo "Docker command executed on ${ip}"
-    fi
-EOF
-    # Check if SSH command was successful
-    if [ $? -ne 0 ]; then
-        echo "SSH command failed on ${ip}."
-    fi
-}
-
-# List of IP address ranges
-ip_ranges=(
-    "10.10.121"
-    "10.10.122"
-    "10.10.123"
-    "10.10.124"
-    "10.10.125"
-)
-
-# Loop through the IP ranges
-for range in "${ip_ranges[@]}"; do
-    for i in $(seq 1 20); do
-        ip="${range}.${i}"
-        run_docker_command_2 "${ip}" &
-                                                                                                                                                                                          103,0-1       90%
-
-# Loop through the IP ranges
-for range in "${ip_ranges[@]}"; do
-    for i in $(seq 1 20); do
-        ip="${range}.${i}"
-        run_docker_command "${ip}" &
-    done
-  done
-
-###################################################
-# Function to run the docker command on a remote machine
-run_docker_command_2() {
-    local ip="$1"
-    local container_image
-    local script
-    container_image="bradenacurtis801/rbm-client-a4000x2:1.0"
-    echo '############################## runnung container image' $container_image 'on ip:' $ip
-    script="./inject_init_bc.sh"
-
-    # Check if SSH connection is successful
-    if ! ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=no "ubuntu@${ip}" 'exit'; then
-        echo "SSH connection failed for ${ip}. Skipping."
-        return
-    fi
-
-    echo "Running command on ${ip}..."
-    ssh -o StrictHostKeyChecking=no "ubuntu@${ip}" <<EOF
-    if sudo docker ps --format "" | grep -q "${container_image}"; then
-        echo "Container with image ${container_image} is already running on ${ip}"
-    else
-        echo "Starting Docker container on ${ip}"
-        sudo docker run --gpus all -d --rm -p 4000:4000 --network host ${container_image} ${script}
-        echo "Docker command executed on ${ip}"
-    fi
-EOF
-    # Check if SSH command was successful
-    if [ $? -ne 0 ]; then
-        echo "SSH command failed on ${ip}."
-    fi
-}
-
-# List of IP address ranges
-ip_ranges=(
-    "10.10.121"
-    "10.10.122"
-    "10.10.123"
-    "10.10.124"
-    "10.10.125"
-)
-
-# Loop through the IP ranges
-for range in "${ip_ranges[@]}"; do
-    for i in $(seq 1 20); do
-        ip="${range}.${i}"
-        run_docker_command_2 "${ip}" &
-                                                                                                                                                                                          103,0-1       90%
+done
 
 # Wait for all background processes to complete
 wait

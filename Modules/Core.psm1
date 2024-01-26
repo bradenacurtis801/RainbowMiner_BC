@@ -3515,7 +3515,7 @@ function Invoke-Core {
                 "Accuracy"  {$Miner_Table.Add(@{Label = "Accuracy"; Expression = {$_.Pools.PSObject.Properties.Value.MarginOfError | ForEach-Object {(1 - $_).ToString("P0")}}; Align = 'right'})>$null}
                 "Pool"      {$Miner_Table.Add(@{Label = "Pool"; Expression = {$_.Pools.PSObject.Properties.Value | ForEach-Object {"$($_.Name)$(if ($_.CoinName -match "^\d+") {"-$($_.CoinName)"} elseif ($_.CoinSymbol) {"-$($_.CoinSymbol)"})"}}})>$null}
                 "PoolFee"   {$Miner_Table.Add(@{Label = "PoolFee"; Expression = {$_.Pools.PSObject.Properties.Value | ForEach-Object {if ($_.PoolFee) {'{0:p2}' -f ($_.PoolFee/100) -replace ",*0+\s%"," %"}else {"-"}}}; Align = 'right'})>$null}
-                "Wallet"    {}
+                "Wallet"    {$Miner_Table.Add(@{Label = "Wallet"; Expression = {"="})>$null}
             }
         }
 
@@ -3643,8 +3643,8 @@ function Invoke-Core {
         $NextBalances = if ($NextBalances -gt 0){"in $($NextBalances) minutes"}else{"now"}
         Write-Host "Pool Balances as of $([System.Timezone]::CurrentTimeZone.ToLocalTime($Session.Updatetracker.Balances)) (next update $($NextBalances)): "        
         [System.Collections.Generic.List[hashtable]]$ColumnFormat = @()
-        $ColumnFormat.Add(@{Name = "Name"; Expression = {if ($_.Name -eq "NiceHash") {$_.Name} else {""}}}) > $null
-        if ($_.Name -eq "NiceHash") {
+        $ColumnFormat.Add(@{Name = "Name"; Expression = {if ($_.Name -eq "Nicehash") {$_.Name} else {""}}}) > $null
+        if ($_.Name -eq "Nicehash") {
             $ColumnFormat.Add(@{Name = "Sym"; Expression = {if ($_.Currency) {$ColumnMark -replace "{value}","$($_.Currency)"} else {$_.Currency}}}) > $null
             $ColumnFormat.Add(@{Name = "Balance"; Expression = {$_."Balance ($($_.Currency))"}}) > $null
             $ColumnFormat.Add(@{Name = "Pending"; Expression = {if ($_.Pending) {$_."Pending ($($_.Currency))"} else {"-"}}}) > $null

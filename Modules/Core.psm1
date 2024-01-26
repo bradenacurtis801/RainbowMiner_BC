@@ -4338,9 +4338,9 @@ function Get-Balance {
     }
 
     if ($Session.Config.ShowWalletBalances -and ($Balances | Where-Object {$_.BaseName -eq "Wallet" -and $_.Total} | Measure-Object).Count) {
-        $Balances = @($Balances | Where-Object {$_.BaseName -ne "Wallet" -and $_.Total} | Select-Object) + $Totals_Pools + @($Balances | Where-Object {$_.BaseName -eq "Wallet" -and $_.Total} | Select-Object) + $Totals_Wallets + $Totals
+        $Balances = $Totals_Pools
     } else {
-        $Balances = @($Balances | Where-Object {$_.Total} | Select-Object) + $Totals
+        $Balances = $Totals_Pools
     }
 
     $Balances | Foreach-Object {

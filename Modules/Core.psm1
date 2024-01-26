@@ -3643,9 +3643,9 @@ function Invoke-Core {
         $NextBalances = if ($NextBalances -gt 0){"in $($NextBalances) minutes"}else{"now"}
         Write-Host "Pool Balances as of $([System.Timezone]::CurrentTimeZone.ToLocalTime($Session.Updatetracker.Balances)) (next update $($NextBalances)): "        
         [System.Collections.Generic.List[hashtable]]$ColumnFormat = @()
-        $ColumnFormat.Add(@{Name = "Name"; Expression = {if ($_.Name -ne "aNiceHash") {"this is a test"} else {$_.Name}}}) > $null
-        if (($BalancesData.Currency | Select-Object -Unique | Measure-Object).Count -gt 1) {
-            $ColumnFormat.Add(@{Name = "Sym"; Expression = {if ($_.BaseName -eq "Wallet") {""} elseif ($_.Currency -and (-not $Session.Config.Pools."$($_.Name)".AECurrency -or $Session.Config.Pools."$($_.Name)".AECurrency -eq $_.Currency)) {$ColumnMark -replace "{value}","$($_.Currency)"} else {$_.Currency}}}) > $null
+        $ColumnFormat.Add(@{Name = "Name"; Expression = {if ($_.Name -eq "NiceHash") {$_.Name} else {""}}}) > $null
+        if ($_.Name -eq "NiceHash") {
+            $ColumnFormat.Add(@{Name = "Sym"; Expression = {if ($_.Currency) {$ColumnMark -replace "{value}","$($_.Currency)"} else {$_.Currency}}}) > $null
             $ColumnFormat.Add(@{Name = "Balance"; Expression = {$_."Balance ($($_.Currency))"}}) > $null
             $ColumnFormat.Add(@{Name = "Pending"; Expression = {if ($_.Pending) {$_."Pending ($($_.Currency))"} else {"-"}}}) > $null
         }

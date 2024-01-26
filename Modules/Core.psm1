@@ -3643,17 +3643,19 @@ function Invoke-Core {
         $NextBalances = if ($NextBalances -gt 0){"in $($NextBalances) minutes"}else{"now"}
         Write-Host "Pool Balances as of $([System.Timezone]::CurrentTimeZone.ToLocalTime($Session.Updatetracker.Balances)) (next update $($NextBalances)): "        
         [System.Collections.Generic.List[hashtable]]$ColumnFormat = @()
-        $ColumnFormat.Add(@{Name = "Name"; Expression = {if ($_.Name -eq "Nicehash") {$_.Name} else {""}}}) > $null
-        if ($_.Name -eq "Nicehash") {
-            $ColumnFormat.Add(@{Name = "Sym"; Expression = {if ($_.Currency) {$ColumnMark -replace "{value}","$($_.Currency)"} else {$_.Currency}}}) > $null
-            $ColumnFormat.Add(@{Name = "Balance"; Expression = {$_."Balance ($($_.Currency))"}}) > $null
-            $ColumnFormat.Add(@{Name = "Pending"; Expression = {if ($_.Pending) {$_."Pending ($($_.Currency))"} else {"-"}}}) > $null
-        }
-        $BalancesData | Foreach-Object {$_ | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name} | Where-Object {$_ -like "Value in *"} | Sort-Object -Unique | Foreach-Object {$Value = $_;$ColumnFormat.Add(@{Name = "$($Value -replace "Value in\s+")"; Expression = [ScriptBlock]::Create("`$(if (`$_.Name -match `"^\*`") {`$ColumnMark -replace `"{value}`",`$_.`"$Value`"} else {`$_.`"$Value`"})"); Align = "right"}) > $null}
-        $BalancesData | Format-Table -Wrap -Property $ColumnFormat | Out-Host
+
+        $FilteredBalancesData = $BalancesData | Where-Object { $_.Name -eq "Nicehash" }
+        $ColumnFormat.Add(@{Name = "Name"; Expression = {$_.Name}}) > $null
+        $ColumnFormat.Add(@{Name = "Sym"; Expression = {if ($_.Currency) {$ColumnMark -replace "{value}","$($_.Currency)"} else {$_.Currency}}}) > $null
+        $ColumnFormat.Add(@{Name = "Balance"; Expression = {$_."Balance ($($_.Currency))"}}) > $null
+        $ColumnFormat.Add(@{Name = "Pending"; Expression = {if ($_.Pending) {$_."Pending ($($_.Currency))"} else {"-"}}}) > $null
+
+        # Format and display the filtered data
+        $FilteredBalancesData | Format-Table -Wrap -Property $ColumnFormat | Out-Host
+
         if ($ColumnFormat -ne $null) {Remove-Variable "ColumnFormat"}
-        if ($BalancesData -ne $null) {Remove-Variable "BalancesData"}
-    }
+        if ($FilteredBalancesData -ne $null) {Remove-Variable "FilteredBalancesData"}
+        }
 
     #Get worker specific profits without cost
 

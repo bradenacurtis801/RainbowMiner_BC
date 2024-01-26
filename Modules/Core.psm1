@@ -3645,8 +3645,8 @@ function Invoke-Core {
         [System.Collections.Generic.List[hashtable]]$ColumnFormat = @()
 
         $FilteredBalancesData = $BalancesData | Where-Object { $_.Name -eq "Nicehash" }
-        $ColumnFormat.Add(@{Name = "Name"; Expression = {$_.Name}}) > $null
-        $ColumnFormat.Add(@{Name = "Sym"; Expression = {if ($_.Currency) {$ColumnMark -replace "{value}","$($_.Currency)"} else {$_.Currency}}}) > $null
+        $ColumnFormat.Add(@{Name = "Name"; Expression = {if ($_.Name -match "^\*") {$ColumnMark -replace "{value}","$($_.Name)"} else {$_.Name}}}) > $null
+        $ColumnFormat.Add(@{Name = "Sym"; Expression = {if ($_.BaseName -ne "Wallet" -and $_.Currency -and (-not $Session.Config.Pools."$($_.Name)".AECurrency -or $Session.Config.Pools."$($_.Name)".AECurrency -eq $_.Currency)) {$ColumnMark -replace "{value}","$($_.Currency)"} else {$_.Currency}}}) > $null
         $ColumnFormat.Add(@{Name = "Balance"; Expression = {$_."Balance ($($_.Currency))"}}) > $null
         $ColumnFormat.Add(@{Name = "Pending"; Expression = {if ($_.Pending) {$_."Pending ($($_.Currency))"} else {"-"}}}) > $null
 
@@ -4338,9 +4338,9 @@ function Get-Balance {
     }
 
     if ($Session.Config.ShowWalletBalances -and ($Balances | Where-Object {$_.BaseName -eq "Wallet" -and $_.Total} | Measure-Object).Count) {
-        $Balances = $Totals_Pools
+        $Balances = @($Balances | Where-Object {$_.BaseName -ne "Wallet" -and $_.Total} | Select-Object) + $Totals_Pools + @($Balances | Where-Object {$_.BaseName -eq "Wallet" -and $_.Total} | Select-Object) + $Totals_Wallets + $Totals
     } else {
-        $Balances = $Totals_Pools
+        $Balances = @($Balances | Where-Object {$_.Total} | Select-Object) + $Totals
     }
 
     $Balances | Foreach-Object {

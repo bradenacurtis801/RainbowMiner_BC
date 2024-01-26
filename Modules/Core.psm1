@@ -3515,7 +3515,7 @@ function Invoke-Core {
                 "Accuracy"  {$Miner_Table.Add(@{Label = "Accuracy"; Expression = {$_.Pools.PSObject.Properties.Value.MarginOfError | ForEach-Object {(1 - $_).ToString("P0")}}; Align = 'right'})>$null}
                 "Pool"      {$Miner_Table.Add(@{Label = "Pool"; Expression = {$_.Pools.PSObject.Properties.Value | ForEach-Object {"$($_.Name)$(if ($_.CoinName -match "^\d+") {"-$($_.CoinName)"} elseif ($_.CoinSymbol) {"-$($_.CoinSymbol)"})"}}})>$null}
                 "PoolFee"   {$Miner_Table.Add(@{Label = "PoolFee"; Expression = {$_.Pools.PSObject.Properties.Value | ForEach-Object {if ($_.PoolFee) {'{0:p2}' -f ($_.PoolFee/100) -replace ",*0+\s%"," %"}else {"-"}}}; Align = 'right'})>$null}
-                "Wallet"    {$Miner_Table.Add(@{Label = "Wallet"; Expression = {"="})>$null}
+                "Wallet"    {$Miner_Table.Add(@{Label = "Wallet"; Expression = {"-"}})>$null}
             }
         }
 
